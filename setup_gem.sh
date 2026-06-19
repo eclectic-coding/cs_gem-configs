@@ -23,7 +23,16 @@ prompt_config() {
   echo "$value"
 }
 
+expand_tilde() {
+  case "$1" in
+    "~/"*) echo "$HOME/${1#"~/"}" ;;
+    "~")   echo "$HOME" ;;
+    *)     echo "$1" ;;
+  esac
+}
+
 save_config() {
+  BASE_DIR="$(expand_tilde "$BASE_DIR")"
   cat > "$CONFIG_FILE" << EOF
 BASE_DIR="$BASE_DIR"
 GITHUB_USERNAME="$GITHUB_USERNAME"
