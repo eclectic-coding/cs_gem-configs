@@ -1,16 +1,65 @@
 #!/usr/bin/env bash
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CONFIG_FILE="$HOME/.gem_setuprc"
+
+# --- 0. LOAD OR CREATE CONFIG ---
+load_config() {
+  if [ -f "$CONFIG_FILE" ]; then
+    # shellcheck source=/dev/null
+    source "$CONFIG_FILE"
+  fi
+}
+
+prompt_config() {
+  local key="$1" prompt="$2" current="$3"
+  if [ -n "$current" ]; then
+    read -rp "$prompt [$current]: " value
+    value="${value:-$current}"
+  else
+    read -rp "$prompt: " value
+  fi
+  echo "$value"
+}
+
+save_config() {
+  cat > "$CONFIG_FILE" << EOF
+BASE_DIR="$BASE_DIR"
+GITHUB_USERNAME="$GITHUB_USERNAME"
+EOF
+  echo "💾 Config saved to $CONFIG_FILE"
+}
+
+setup_config() {
+  load_config
+  BASE_DIR="$(prompt_config BASE_DIR "Base directory for gems" "$BASE_DIR")"
+  GITHUB_USERNAME="$(prompt_config GITHUB_USERNAME "GitHub username" "$GITHUB_USERNAME")"
+  save_config
+}
+
+if [ "$1" = "--config" ]; then
+  setup_config
+  exit 0
+fi
+
+load_config
+
+if [ -z "$BASE_DIR" ] || [ -z "$GITHUB_USERNAME" ]; then
+  echo "First-time setup — configuring defaults."
+  setup_config
+fi
+
 # --- 1. VALIDATE AND EXTRACT ARGUMENT ---
 if [ -z "$1" ]; then
   echo "❌ Error: Missing gem name."
   echo "Usage: $0 <gem_name>"
+  echo "       $0 --config  (reconfigure defaults)"
   echo "Example: $0 core_api"
   exit 1
 fi
 
 GEM_NAME="$1"
-BASE_DIR="$HOME/code/gems"
 
 echo "🚀 Starting setup for Ruby gem: ${GEM_NAME}..."
 
@@ -21,7 +70,7 @@ bundle gem "$GEM_NAME" \
   --no-exe \
   --no-coc \
   --git \
-  --github-username "eclectic-coding" \
+  --github-username "$GITHUB_USERNAME" \
   --mit \
   --test=rspec \
   --linter=rubocop \
@@ -123,9 +172,9 @@ YAML
 
 # --- 6. COPY CI WORKFLOWS ---
 mkdir -p "$BASE_DIR/$GEM_NAME/.github/workflows"
-cp ~/bin/files/main.yml "$BASE_DIR/$GEM_NAME/.github/workflows/main.yml"
-cp ~/bin/files/publish.yml "$BASE_DIR/$GEM_NAME/.github/workflows/publish.yml"
-cp "$HOME/bin/files/release_gem" bin/release
+cp "$SCRIPT_DIR/files/main.yml" "$BASE_DIR/$GEM_NAME/.github/workflows/main.yml"
+cp "$SCRIPT_DIR/files/publish.yml" "$BASE_DIR/$GEM_NAME/.github/workflows/publish.yml"
+cp "$SCRIPT_DIR/files/release_gem" bin/release
 
 sed -i '' "s/GEM_NAME/${GEM_NAME}/g" bin/release
 

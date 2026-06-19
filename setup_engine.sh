@@ -1,16 +1,65 @@
 #!/usr/bin/env bash
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CONFIG_FILE="$HOME/.gem_setuprc"
+
+# --- 0. LOAD OR CREATE CONFIG ---
+load_config() {
+  if [ -f "$CONFIG_FILE" ]; then
+    # shellcheck source=/dev/null
+    source "$CONFIG_FILE"
+  fi
+}
+
+prompt_config() {
+  local key="$1" prompt="$2" current="$3"
+  if [ -n "$current" ]; then
+    read -rp "$prompt [$current]: " value
+    value="${value:-$current}"
+  else
+    read -rp "$prompt: " value
+  fi
+  echo "$value"
+}
+
+save_config() {
+  cat > "$CONFIG_FILE" << EOF
+BASE_DIR="$BASE_DIR"
+GITHUB_USERNAME="$GITHUB_USERNAME"
+EOF
+  echo "💾 Config saved to $CONFIG_FILE"
+}
+
+setup_config() {
+  load_config
+  BASE_DIR="$(prompt_config BASE_DIR "Base directory for gems" "$BASE_DIR")"
+  GITHUB_USERNAME="$(prompt_config GITHUB_USERNAME "GitHub username" "$GITHUB_USERNAME")"
+  save_config
+}
+
+if [ "$1" = "--config" ]; then
+  setup_config
+  exit 0
+fi
+
+load_config
+
+if [ -z "$BASE_DIR" ] || [ -z "$GITHUB_USERNAME" ]; then
+  echo "First-time setup — configuring defaults."
+  setup_config
+fi
+
 # --- 1. VALIDATE AND EXTRACT ARGUMENT ---
 if [ -z "$1" ]; then
   echo "❌ Error: Missing engine name."
   echo "Usage: $0 <engine_name>"
+  echo "       $0 --config  (reconfigure defaults)"
   echo "Example: $0 core_api"
   exit 1
 fi
 
 ENGINE_NAME="$1"
-BASE_DIR="$HOME/code/gems"
 
 echo "🚀 Starting setup for isolated Rails Engine API: ${ENGINE_NAME}..."
 
@@ -22,7 +71,7 @@ rails plugin new "$ENGINE_NAME" \
   --mountable \
   --api \
   --git \
-  --git-username "eclectic-coding" \
+  --git-username "$GITHUB_USERNAME" \
   --mit \
   --skip-test \
   --dummy-path=spec/dummy \
@@ -122,9 +171,9 @@ YAML
 echo "🛠️ Creating GitHub Actions workflow configuration..."
 mkdir -p .github/workflows
 
-cp "$HOME/bin/files/main_engine.yml" .github/workflows/main.yml
-cp "$HOME/bin/files/publish_engine.yml" .github/workflows/publish.yml
-cp "$HOME/bin/files/release_engine" bin/release
+cp "$SCRIPT_DIR/files/main_engine.yml" .github/workflows/main.yml
+cp "$SCRIPT_DIR/files/publish_engine.yml" .github/workflows/publish.yml
+cp "$SCRIPT_DIR/files/release_engine" bin/release
 
 sed -i '' "s/GEM_NAME/${ENGINE_NAME}/g" bin/release
 
