@@ -2,71 +2,23 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CONFIG_FILE="$HOME/.gem_setuprc"
-
-# --- 0. LOAD OR CREATE CONFIG ---
-load_config() {
-  if [ -f "$CONFIG_FILE" ]; then
-    # shellcheck source=/dev/null
-    source "$CONFIG_FILE"
-  fi
-}
-
-prompt_config() {
-  local key="$1" prompt="$2" current="$3"
-  if [ -n "$current" ]; then
-    read -rp "$prompt [$current]: " value
-    value="${value:-$current}"
-  else
-    read -rp "$prompt: " value
-  fi
-  echo "$value"
-}
-
-expand_tilde() {
-  case "$1" in
-    "~/"*) echo "$HOME/${1#"~/"}" ;;
-    "~")   echo "$HOME" ;;
-    *)     echo "$1" ;;
-  esac
-}
-
-save_config() {
-  BASE_DIR="$(expand_tilde "$BASE_DIR")"
-  cat > "$CONFIG_FILE" << EOF
-BASE_DIR="$BASE_DIR"
-GITHUB_USERNAME="$GITHUB_USERNAME"
-EOF
-  echo "💾 Config saved to $CONFIG_FILE"
-}
-
-setup_config() {
-  load_config
-  BASE_DIR="$(prompt_config BASE_DIR "Base directory for gems" "$BASE_DIR")"
-  GITHUB_USERNAME="$(prompt_config GITHUB_USERNAME "GitHub username" "$GITHUB_USERNAME")"
-  save_config
-}
+# shellcheck source=config.sh
+source "$SCRIPT_DIR/config.sh"
 
 if [ "$1" = "--config" ]; then
-  setup_config
+  run_config_prompt
   exit 0
-fi
-
-load_config
-
-if [ -z "$BASE_DIR" ] || [ -z "$GITHUB_USERNAME" ]; then
-  echo "First-time setup — configuring defaults."
-  setup_config
 fi
 
 # --- 1. VALIDATE AND EXTRACT ARGUMENT ---
 if [ -z "$1" ]; then
-  echo "❌ Error: Missing engine name."
   echo "Usage: $0 <engine_name>"
   echo "       $0 --config  (reconfigure defaults)"
   echo "Example: $0 core_api"
   exit 1
 fi
+
+ensure_config
 
 ENGINE_NAME="$1"
 
