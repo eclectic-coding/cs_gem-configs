@@ -13,7 +13,7 @@ Opinionated scaffolding for Ruby gems and Rails engine APIs, pre-configured with
 Clone the repo anywhere:
 
 ```bash
-git clone https://github.com/eclectic-coding/gem-configs.git
+git clone https://github.com/eclectic-coding/cs_gem-configs.git gem-configs
 cd gem-configs
 ```
 
