@@ -2,9 +2,9 @@
 
 CONFIG_FILE="$HOME/.gem_setuprc"
 
+# shellcheck disable=SC2088
 expand_tilde() {
   case "$1" in
-    # shellcheck disable=SC2088
     "~/"*) echo "$HOME/${1#"~/"}" ;;
     "~")   echo "$HOME" ;;
     *)     echo "$1" ;;
