@@ -1,3 +1,7 @@
+![CI](https://github.com/eclectic-coding/cs_gem-configs/actions/workflows/ci.yml/badge.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Shell Script](https://img.shields.io/badge/Shell-Bash-green.svg)
+
 # Gem & Engine Setup Scripts
 
 Opinionated scaffolding for Ruby gems and Rails engine APIs, pre-configured with RSpec, SimpleCov, RuboCop, Bundler Audit, Codecov, and GitHub Actions CI/CD.
@@ -64,6 +68,10 @@ To reconfigure without running a setup:
 - CHANGELOG.md (Keep a Changelog format)
 - Rakefile wired with a default task running lint, audit, and specs
 
+## CI
+
+This repo runs [ShellCheck](https://www.shellcheck.net/) on all shell scripts via GitHub Actions on every push and PR to `main`.
+
 ## File structure
 
 ```
@@ -78,4 +86,6 @@ gem-configs/
     main_engine.yml
     publish_engine.yml
     release_engine
+  .github/workflows/
+    ci.yml             # ShellCheck linting
 ```
