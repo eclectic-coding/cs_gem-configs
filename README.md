@@ -34,7 +34,7 @@ On first run, you'll be prompted for two settings:
 - **Base directory** -- where new gems/engines will be created
 - **GitHub username** -- used for gem/engine metadata
 
-These are saved to `~/.gem_setuprc` and reused on subsequent runs. On each subsequent run, the current settings are displayed and you're given the option to update them before proceeding.
+These are saved to `~/.gem_setuprc` and reused on subsequent runs. On each subsequent run, the current settings are displayed and you're given the option to update them before proceeding. When updating, each prompt shows the current value in brackets -- press Enter to keep it unchanged, or type a new value to replace it.
 
 To reconfigure without running a setup:
 
