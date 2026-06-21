@@ -44,6 +44,7 @@ run_config_prompt() {
   echo "Config saved to $CONFIG_FILE"
 }
 
+
 show_config() {
   echo "Current config ($CONFIG_FILE):"
   echo "  Base directory:    $BASE_DIR"
@@ -64,6 +65,8 @@ ensure_config() {
   echo ""
   read -rp "Update config? [y/N]: " answer
   if [[ "$answer" =~ ^[Yy]$ ]]; then
+    echo "Press Enter to keep current value."
+    echo ""
     run_config_prompt
   fi
 }
